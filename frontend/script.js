@@ -198,19 +198,9 @@ function submitForm() {
   })
   .then(data => {
 
-    // ✅ READ DOSHA PERCENTAGES
-    const vata = data.percentages.Vata;
-    const pitta = data.percentages.Pitta;
-    const kapha = data.percentages.Kapha;
-
-    // ✅ DISPLAY RESULT
-    resultDiv.innerHTML = `
-      ✅ <b>Dominant Dosha:</b> ${data.prakriti}<br><br>
-
-      🌿 <b>Vata:</b> ${vata}%<br>
-      🔥 <b>Pitta:</b> ${pitta}%<br>
-      🌊 <b>Kapha:</b> ${kapha}%
-    `;
+    resultDiv.innerHTML =
+      `✅ <b>Prakriti:</b> ${data.prakriti}<br>
+       🎯 <b>Confidence:</b> ${data.confidence}`;
 
     if (data.pdf_id) {
       downloadLink.href =
