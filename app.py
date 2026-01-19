@@ -64,7 +64,7 @@ def predict():
         )
         image_id = image_upload["$id"]
 
-        # Predict (NOW RETURNS PERCENTAGES)
+        # Predict
         result = predict_prakriti(filepath, answers)
 
         # Generate PDF
@@ -80,7 +80,7 @@ def predict():
         )
         pdf_id = pdf_upload["$id"]
 
-        # Save record (STORE PERCENTAGES INSTEAD OF CONFIDENCE)
+        # Save record
         database.create_document(
             database_id=DATABASE_ID,
             collection_id=COLLECTION_ID,
@@ -90,16 +90,15 @@ def predict():
                 "age": age,
                 "answers": answers,
                 "prakriti": result["prakriti"],
-                "percentages": json.dumps(result["percentages"]),
+                "confidence": result["confidence"],
                 "image_id": image_id,
                 "pdf_id": pdf_id
             }
         )
 
-        # API RESPONSE
         return jsonify({
             "prakriti": result["prakriti"],
-            "percentages": result["percentages"],
+            "confidence": result["confidence"],
             "pdf_id": pdf_id
         })
 
@@ -133,7 +132,7 @@ def download_pdf(pdf_id):
         return jsonify({"error": str(e)}), 500
 
 # -----------------------------
-# PDF Generator (UPDATED FOR PERCENTAGES)
+# PDF Generator (TABLE DESIGN)
 # -----------------------------
 def generate_pdf(path, name, age, answers, result, image_path):
 
@@ -255,11 +254,14 @@ def generate_pdf(path, name, age, answers, result, image_path):
         ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#2563eb")),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
         ("ALIGN", (0,0), (-1,0), "CENTER"),
+
         ("GRID", (0,0), (-1,-1), 0.6, colors.grey),
+
         ("LEFTPADDING", (0,0), (-1,-1), 12),
         ("RIGHTPADDING", (0,0), (-1,-1), 12),
         ("TOPPADDING", (0,0), (-1,-1), 12),
         ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+
         ("BACKGROUND", (0,1), (-1,-1), colors.HexColor("#eef2ff")),
         ("ROWBACKGROUNDS", (0,1), (-1,-1), [
             colors.HexColor("#eef2ff"),
@@ -270,14 +272,10 @@ def generate_pdf(path, name, age, answers, result, image_path):
     elements.append(answers_table)
     elements.append(Spacer(1, 30))
 
-    # ---------------- RESULT BANNER (PERCENTAGES) ----------------
-    pct = result["percentages"]
-
+    # ---------------- RESULT BANNER ----------------
     result_text = Paragraph(
-        f"<b>Dominant Dosha:</b> {result['prakriti']}<br/><br/>"
-        f"<b>Vata:</b> {pct['Vata']}% &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; "
-        f"<b>Pitta:</b> {pct['Pitta']}% &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; "
-        f"<b>Kapha:</b> {pct['Kapha']}%",
+        f"<b>Prakriti:</b> {result['prakriti']} &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; "
+        f"<b>Confidence:</b> {result['confidence']}",
         result_style
     )
 
