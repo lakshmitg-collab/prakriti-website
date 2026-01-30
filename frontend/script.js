@@ -158,3 +158,8 @@ function submitForm() {
   })
   .catch(() => alert("Submission failed"));
 }
+
+window.resetSubmission = () => {
+  localStorage.removeItem("prakriti_submitted");
+  location.reload();
+};
