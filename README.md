@@ -1,2 +1,2 @@
 # prakriti-website
-Web application for Prakriti identification using ML
+Web application for collection of data for Prakriti identification
