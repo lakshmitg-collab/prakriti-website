@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Prakriti Assessment System</title>
+  <title>Prakriti Data Collection</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
 
-  <h1>🧘 Prakriti Assessment</h1>
-  <p class="subtitle">Ayurvedic Constitution Analysis</p>
+  <h1>🧘 Prakriti Data Collection</h1>
+  <p class="subtitle">Ayurvedic Constitution Research Study</p>
 
   <!-- PERSONAL DETAILS -->
   <div class="card">
@@ -21,28 +21,23 @@
   </div>
 
   <!-- CAMERA -->
-  <!-- CAMERA -->
-<div class="card">
-  <h2>📸 Face Capture</h2>
+  <div class="card">
+    <h2>📸 Face Capture</h2>
 
-  <!-- CAMERA BOX -->
-  <div class="camera-box">
-    <video id="video" autoplay></video>
-    <img id="photoPreview">
-    <canvas id="canvas" hidden></canvas>
+    <div class="camera-box">
+      <video id="video" autoplay></video>
+      <img id="photoPreview">
+      <canvas id="canvas" hidden></canvas>
+    </div>
+
+    <div class="camera-controls center">
+      <button class="primary-btn" onclick="startCamera()">Start Camera</button>
+      <button class="secondary-btn" onclick="switchCamera()">Switch Camera</button>
+      <button id="captureBtn" class="secondary-btn" onclick="capture()" hidden>
+        Capture
+      </button>
+    </div>
   </div>
-
-  <!-- CONTROLS -->
-  <div class="camera-controls center">
-    <button class="primary-btn" onclick="startCamera()">📷 Start Camera</button>
-    <button class="secondary-btn" onclick="switchCamera()">🔄 Switch Camera</button>
-    <button id="captureBtn" class="secondary-btn" onclick="capture()" hidden>
-      📸 Capture
-    </button>
-  </div>
-</div>
-
-
 
   <!-- QUESTIONS -->
   <div class="card">
@@ -52,19 +47,17 @@
 
   <!-- SUBMIT -->
   <div class="submit-area">
-    <button class="submit-btn" onclick="submitForm()">Submit Assessment</button>
+    <button class="submit-btn" onclick="submitForm()">Submit Data</button>
   </div>
 
-  <!-- RESULT CARD -->
-<div class="card result-card" id="resultCard" style="display:none;">
-  <h2>📊 Assessment Result</h2>
-
-  <div class="result-box" id="result"></div>
-
-  <div class="download-box center">
-    <a id="downloadLink" class="download-btn" target="_blank"></a>
+  <!-- RESULT -->
+  <div class="card result-card" id="resultCard" style="display:none;">
+    <h2>✅ Submission Status</h2>
+    <div class="result-box" id="result"></div>
+    <div class="download-box center">
+      <a id="downloadLink" class="download-btn" target="_blank"></a>
+    </div>
   </div>
-</div>
 
 </div>
 
