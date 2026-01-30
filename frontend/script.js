@@ -1,3 +1,20 @@
+// -------------------------
+// PREVENT MULTIPLE SUBMISSION (OPTION 1)
+// -------------------------
+if (localStorage.getItem("prakriti_submitted")) {
+  document.body.innerHTML = `
+    <div style="
+      text-align:center;
+      margin-top:100px;
+      font-family:Segoe UI, sans-serif;
+    ">
+      <h2>✅ Already Submitted</h2>
+      <p>You have already submitted the form. Thank you for your participation.</p>
+    </div>
+  `;
+  throw new Error("Already submitted");
+}
+
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const photoPreview = document.getElementById("photoPreview");
@@ -121,13 +138,19 @@ function submitForm() {
   })
   .then(res => res.json())
   .then(data => {
-    resultCard.style.display = "block";
-    resultDiv.innerHTML = "✅ Data submitted successfully";
-    if (data.pdf_id) {
-      downloadLink.href =
-        `https://prakriti-website.onrender.com/download/${data.pdf_id}`;
-      downloadLink.innerText = "Download PDF";
-    }
-  })
+
+  // 🔒 LOCK FUTURE SUBMISSIONS
+  localStorage.setItem("prakriti_submitted", "true");
+
+  resultCard.style.display = "block";
+  resultDiv.innerHTML = "✅ Data submitted successfully";
+
+  if (data.pdf_id) {
+    downloadLink.href =
+      `https://prakriti-website.onrender.com/download/${data.pdf_id}`;
+    downloadLink.innerText = "Download PDF";
+  }
+})
+
   .catch(() => alert("Submission failed"));
 }
