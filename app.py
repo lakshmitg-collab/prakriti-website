@@ -3,7 +3,6 @@ from flask_cors import CORS
 import os, uuid, json
 from appwrite.input_file import InputFile
 
-from model import predict_prakriti
 from appwrite_client import database, storage, DATABASE_ID, COLLECTION_ID, BUCKET_ID
 
 from reportlab.platypus import (
@@ -22,7 +21,7 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # --------------------------------------------------
-# QUESTION TEXT (for PDF display)
+# QUESTION TEXT (for PDF)
 # --------------------------------------------------
 QUESTION_MAP = {
     "1": "How would you describe your body frame?",
@@ -50,22 +49,22 @@ QUESTION_COLUMN_MAP = {
 # -----------------------------
 @app.route("/")
 def home():
-    return "Prakriti API Running with Appwrite"
+    return "Prakriti Data Collection API Running"
 
 # -----------------------------
-# Upload + Predict
+# Upload + Store ONLY
 # -----------------------------
-@app.route("/predict", methods=["POST"])
-def predict():
+@app.route("/submit", methods=["POST"])
+def submit():
     try:
         image = request.files["image"]
-        answers_raw = request.form.get("answers")  # JSON string
+        answers_raw = request.form.get("answers")
         name = request.form.get("name")
         age = int(request.form.get("age"))
 
         parsed_answers = json.loads(answers_raw)
 
-        # ---------------- Save image ----------------
+        # ---------------- Save image locally ----------------
         image_filename = f"{uuid.uuid4()}.png"
         image_path = os.path.join(UPLOAD_FOLDER, image_filename)
         image.save(image_path)
@@ -78,15 +77,11 @@ def predict():
         )
         image_id = image_upload["$id"]
 
-        # ---------------- Predict ----------------
-        result = predict_prakriti(image_path, answers_raw)
-
-        # ---------------- Generate PDF ----------------
+        # ---------------- Generate PDF (no prediction) ----------------
         pdf_filename = f"{uuid.uuid4()}.pdf"
         pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
-        generate_pdf(pdf_path, name, age, answers_raw, result, image_path)
+        generate_pdf(pdf_path, name, age, answers_raw, image_path)
 
-        # ---------------- Upload PDF ----------------
         pdf_upload = storage.create_file(
             bucket_id=BUCKET_ID,
             file_id="unique()",
@@ -98,29 +93,27 @@ def predict():
         answer_columns = {}
 
         for qid, selected_opts in parsed_answers.items():
-            column_name = QUESTION_COLUMN_MAP.get(qid)
-            if column_name:
-                answer_columns[column_name] = ", ".join(selected_opts)
+            col = QUESTION_COLUMN_MAP.get(qid)
+            if col:
+                answer_columns[col] = ", ".join(selected_opts)
 
-        # ---------------- Save record ----------------
+        # ---------------- Save ONLY RAW DATA ----------------
         database.create_document(
             database_id=DATABASE_ID,
-            collection_id=COLLECTION_ID,
+            collection_id=COLLECTION_ID,  # data_collection
             document_id="unique()",
             data={
                 "name": name,
                 "age": age,
                 **answer_columns,
-                "prakriti": result["prakriti"],
-                "confidence": result["confidence"],
                 "image_id": image_id,
                 "pdf_id": pdf_id
             }
         )
 
         return jsonify({
-            "prakriti": result["prakriti"],
-            "confidence": result["confidence"],
+            "status": "success",
+            "message": "Data collected successfully",
             "pdf_id": pdf_id
         })
 
@@ -129,34 +122,9 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 # -----------------------------
-# Download PDF
+# PDF Generator (NO PREDICTION)
 # -----------------------------
-@app.route("/download/<pdf_id>")
-def download_pdf(pdf_id):
-    try:
-        file_bytes = storage.get_file_download(
-            bucket_id=BUCKET_ID,
-            file_id=pdf_id
-        )
-
-        temp_path = f"/tmp/{pdf_id}.pdf"
-        with open(temp_path, "wb") as f:
-            f.write(file_bytes)
-
-        return send_file(
-            temp_path,
-            as_attachment=True,
-            download_name="prakriti_report.pdf"
-        )
-
-    except Exception as e:
-        print("DOWNLOAD ERROR:", e)
-        return jsonify({"error": str(e)}), 500
-
-# -----------------------------
-# PDF Generator
-# -----------------------------
-def generate_pdf(path, name, age, answers, result, image_path):
+def generate_pdf(path, name, age, answers, image_path):
 
     styles = getSampleStyleSheet()
 
@@ -179,18 +147,11 @@ def generate_pdf(path, name, age, answers, result, image_path):
         fontSize=11
     )
 
-    result_style = ParagraphStyle(
-        "result",
-        fontSize=16,
-        alignment=1,
-        textColor=colors.white
-    )
-
     doc = SimpleDocTemplate(path, pagesize=A4)
     elements = []
 
     # Header
-    header = Table([[Paragraph("PRAKRITI ASSESSMENT REPORT", title_style)]])
+    header = Table([[Paragraph("PRAKRITI DATA COLLECTION", title_style)]])
     header.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,-1), colors.HexColor("#1e3a8a")),
         ("ALIGN", (0,0), (-1,-1), "CENTER"),
@@ -199,7 +160,7 @@ def generate_pdf(path, name, age, answers, result, image_path):
     elements.append(header)
     elements.append(Spacer(1, 20))
 
-    # Answers table
+    # Answers
     parsed_answers = json.loads(answers)
     table_data = [[
         Paragraph("Question", table_header_style),
@@ -219,24 +180,6 @@ def generate_pdf(path, name, age, answers, result, image_path):
     ]))
 
     elements.append(answers_table)
-    elements.append(Spacer(1, 25))
-
-    # Result
-    result_table = Table([[
-        Paragraph(
-            f"<b>Prakriti:</b> {result['prakriti']} &nbsp;&nbsp; "
-            f"<b>Confidence:</b> {result['confidence']}",
-            result_style
-        )
-    ]])
-
-    result_table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,-1), colors.HexColor("#047857")),
-        ("ALIGN", (0,0), (-1,-1), "CENTER"),
-        ("PADDING", (0,0), (-1,-1), 16),
-    ]))
-
-    elements.append(result_table)
     doc.build(elements)
 
 # -----------------------------
