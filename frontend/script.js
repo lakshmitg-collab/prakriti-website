@@ -1,6 +1,3 @@
-// -------------------------
-// DOM ELEMENTS
-// -------------------------
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const photoPreview = document.getElementById("photoPreview");
@@ -15,10 +12,7 @@ let capturedBlob = null;
 let answers = {};
 let useFrontCamera = true;
 
-// -------------------------
-// CAMERA FUNCTIONS
-// -------------------------
-
+// ---------------- CAMERA ----------------
 function stopCamera() {
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
@@ -26,47 +20,25 @@ function stopCamera() {
   }
 }
 
-/* Start Camera */
 function startCamera() {
   stopCamera();
-
-  const constraints = {
-    video: {
-      facingMode: useFrontCamera ? "user" : "environment"
-    }
-  };
-
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(s => {
-      stream = s;
-      video.srcObject = s;
-      video.play();
-
-      // ✅ SHOW VIDEO INSIDE CAMERA BOX
-      video.classList.add("active");
-      photoPreview.classList.remove("active");
-
-      captureBtn.hidden = false;
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Camera access denied or unavailable");
-    });
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: useFrontCamera ? "user" : "environment" }
+  }).then(s => {
+    stream = s;
+    video.srcObject = s;
+    video.classList.add("active");
+    photoPreview.classList.remove("active");
+    captureBtn.hidden = false;
+  }).catch(() => alert("Camera access failed"));
 }
 
-/* Switch Camera */
 function switchCamera() {
   useFrontCamera = !useFrontCamera;
   startCamera();
 }
 
-/* Capture Photo */
 function capture() {
-  if (!stream) {
-    alert("Start camera first");
-    return;
-  }
-
   const ctx = canvas.getContext("2d");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -75,146 +47,83 @@ function capture() {
   canvas.toBlob(blob => {
     capturedBlob = blob;
     photoPreview.src = URL.createObjectURL(blob);
-
-    // ✅ SHOW PHOTO INSIDE CAMERA BOX
     photoPreview.classList.add("active");
     video.classList.remove("active");
   });
 
   stopCamera();
   captureBtn.hidden = true;
-
-  alert("✅ Photo captured successfully");
 }
 
-// -------------------------
-// QUESTIONNAIRE DATA
-// -------------------------
+// ---------------- QUESTIONS ----------------
 const sections = [
   {
-    title: "Section A: Body Build & Weight",
+    title: "Body Build & Weight",
     qs: [
-      ["Q1. How would you describe your body frame?", ["Thin / Lean", "Medium", "Heavy / Broad"]],
-      ["Q2. How does your body weight change over time?", ["Difficult to gain weight", "Remains stable", "Gains weight easily"]]
+      ["Q1. Body frame?", ["Thin", "Medium", "Heavy"]],
+      ["Q2. Weight change?", ["Hard to gain", "Stable", "Easy gain"]]
     ]
   },
   {
-    title: "Section B: Appetite & Digestion",
+    title: "Digestion",
     qs: [
-      ["Q3. How is your appetite usually?", ["Irregular or low", "Strong and intense", "Mild but steady"]],
-      ["Q4. How is your digestion after meals?", ["Irregular or bloating", "Fast digestion", "Slow digestion"]],
-      ["Q5. How do you generally feel after eating?", ["Bloated", "Energetic", "Sleepy"]],
-      ["Q6. Bowel movements?", ["Dry or irregular", "Loose or frequent", "Heavy"]]
+      ["Q3. Appetite?", ["Low", "Strong", "Moderate"]],
+      ["Q4. Digestion?", ["Irregular", "Fast", "Slow"]],
+      ["Q5. After eating?", ["Bloated", "Energetic", "Sleepy"]],
+      ["Q6. Bowel?", ["Dry", "Loose", "Heavy"]]
     ]
   }
 ];
 
-// -------------------------
-// RENDER QUESTIONS
-// -------------------------
 let qid = 1;
-
 sections.forEach(section => {
-  let block = `<div class="section"><h3>${section.title}</h3>`;
-
+  let html = `<h3>${section.title}</h3>`;
   section.qs.forEach(q => {
-    block += `<div class="question"><b>${q[0]}</b>`;
-    block += `<div class="option-grid">`;
-
+    html += `<p><b>${q[0]}</b></p><div class="option-grid">`;
     q[1].forEach(opt => {
-      block += `
-        <div class="option-box"
-             onclick="toggleOption(this, '${qid}', '${opt}')">
-          ${opt}
-        </div>
-      `;
+      html += `<div class="option-box"
+        onclick="toggleOption(this,'${qid}','${opt}')">${opt}</div>`;
     });
-
-    block += `</div></div>`;
+    html += `</div>`;
     qid++;
   });
-
-  block += `</div>`;
-  questionsDiv.innerHTML += block;
+  questionsDiv.innerHTML += html;
 });
 
-// -------------------------
-// OPTION TOGGLE HANDLER
-// -------------------------
-function toggleOption(box, qid, value) {
-  box.classList.toggle("selected");
-
-  if (!answers[qid]) {
-    answers[qid] = [];
-  }
-
-  if (answers[qid].includes(value)) {
-    answers[qid] = answers[qid].filter(v => v !== value);
-  } else {
-    answers[qid].push(value);
-  }
+function toggleOption(el, qid, val) {
+  el.classList.toggle("selected");
+  answers[qid] = answers[qid] || [];
+  answers[qid].includes(val)
+    ? answers[qid] = answers[qid].filter(v => v !== val)
+    : answers[qid].push(val);
 }
 
-// -------------------------
-// SUBMIT FORM
-// -------------------------
+// ---------------- SUBMIT ----------------
 function submitForm() {
+  if (!capturedBlob) return alert("Capture photo first");
 
-  if (!capturedBlob) {
-    alert("Please capture photo first");
-    return;
-  }
+  const name = document.getElementById("name").value;
+  const age = document.getElementById("age").value;
 
-  const name = document.getElementById("name").value.trim();
-  const age = document.getElementById("age").value.trim();
+  const fd = new FormData();
+  fd.append("image", capturedBlob, "photo.png");
+  fd.append("answers", JSON.stringify(answers));
+  fd.append("name", name);
+  fd.append("age", age);
 
-  if (!name || !age) {
-    alert("Please enter name and age");
-    return;
-  }
-
-  if (Object.keys(answers).length === 0) {
-    alert("Please select at least one option");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("image", capturedBlob, "photo.png");
-  formData.append("answers", JSON.stringify(answers));
-  formData.append("name", name);
-  formData.append("age", age);
-
-  resultDiv.innerHTML = "⏳ Processing...";
-  resultCard.style.display = "block";
-  downloadLink.style.display = "none";
-
-  fetch("https://prakriti-website.onrender.com/predict", {
+  fetch("https://prakriti-website.onrender.com/submit", {
     method: "POST",
-    body: formData
+    body: fd
   })
-  .then(res => {
-    if (!res.ok) throw new Error("Server error");
-    return res.json();
-  })
+  .then(res => res.json())
   .then(data => {
-
-    resultDiv.innerHTML =
-      `✅ <b>Prakriti:</b> ${data.prakriti}<br>
-       🎯 <b>Confidence:</b> ${data.confidence}`;
-
+    resultCard.style.display = "block";
+    resultDiv.innerHTML = "✅ Data submitted successfully";
     if (data.pdf_id) {
       downloadLink.href =
         `https://prakriti-website.onrender.com/download/${data.pdf_id}`;
-      downloadLink.innerHTML = "⬇ Download PDF Report";
-      downloadLink.style.display = "inline-block";
+      downloadLink.innerText = "Download PDF";
     }
-
-    resultCard.scrollIntoView({ behavior: "smooth" });
   })
-  .catch(err => {
-    console.error(err);
-    alert("Submission failed. Please try again.");
-    resultDiv.innerHTML = "";
-    resultCard.style.display = "none";
-  });
+  .catch(() => alert("Submission failed"));
 }
