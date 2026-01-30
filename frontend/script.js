@@ -58,19 +58,23 @@ function capture() {
 // ---------------- QUESTIONS ----------------
 const sections = [
   {
-    title: "Body Build & Weight",
+    title: "Physical & Body Characteristics",
     qs: [
-      ["Q1. Body frame?", ["Thin", "Medium", "Heavy"]],
-      ["Q2. Weight change?", ["Hard to gain", "Stable", "Easy gain"]]
+      ["Q1. How would you describe your overall body build and muscle development?", ["Thin, lean, low muscle mass", "Moderately built, proportionate muscles", "Broad, heavy, well-developed muscles"]],
+      ["Q2. How would you describe your body frame or chest width?", ["Narrow / slim frame", "Medium frame", "Broad / wide frame"]],
+      ["Q3. How would you describe your body proportions or height relative to others?", ["Appears too short or too tall compared to average", "Medium / proportionate", "Long or well-proportioned"]],
+      ["Q4. What best describes your natural skin complexion or color?", ["Black / dark", "Dark brown", "Dusky / wheatish", "Light brown / fair"]],
+      ["Q5. What best describes the condition of your nails?", ["Dry, rough, brittle, easily breaking", "Sharp, flexible, pink, lustrous", "Thick, oily, smooth, polished"]],
+      ["Q6. How sensitive is your skin to environment, cosmetics, or weather?", ["Very sensitive, easily irritated", "Normal sensitivity", "Less sensitive / thick skin"]]
     ]
   },
   {
-    title: "Digestion",
+    title: "Digestion, Appetite & Metabolism",
     qs: [
-      ["Q3. Appetite?", ["Low", "Strong", "Moderate"]],
-      ["Q4. Digestion?", ["Irregular", "Fast", "Slow"]],
-      ["Q5. After eating?", ["Bloated", "Energetic", "Sleepy"]],
-      ["Q6. Bowel?", ["Dry", "Loose", "Heavy"]]
+      ["Q7. How would you describe your appetite?", ["Irregular or low appetite", "Moderate and steady appetite", "Strong appetite, frequent hunger"]],
+      ["Q8. How would you describe your digestion after meals?", ["Weak digestion, bloating or gas", "Moderate digestion", "Strong digestion, fast metabolism"]],
+      ["Q9. How would you describe your metabolism and weight change?", ["Slow metabolism, difficult to gain weight", "Moderate metabolism", "Fast metabolism, weight changes easily"]],
+      ["Q10. How are your bowel movements usually?", ["Constipation, dry stools", "Loose stools, frequent", "Regular and well-formed"]]
     ]
   }
 ];
