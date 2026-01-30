@@ -16,9 +16,9 @@ let answers = {};
 let useFrontCamera = true;
 
 // -------------------------
-// DISABLE SUBMIT IF ALREADY SUBMITTED
+// DISABLE SUBMIT IF ALREADY SUBMITTED (SESSION ONLY)
 // -------------------------
-if (localStorage.getItem("prakriti_submitted")) {
+if (sessionStorage.getItem("prakriti_submitted")) {
   submitBtn.disabled = true;
   submitBtn.innerText = "Already Submitted";
   submitBtn.style.opacity = "0.6";
@@ -140,7 +140,6 @@ function submitForm() {
 
   if (!name || !age) return alert("Please enter name and age");
 
-  // Disable immediately to avoid double-click
   submitBtn.disabled = true;
   submitBtn.innerText = "Submitting...";
   submitBtn.style.opacity = "0.6";
@@ -160,8 +159,8 @@ function submitForm() {
     return res.json();
   })
   .then(() => {
-    // 🔒 Mark as submitted
-    localStorage.setItem("prakriti_submitted", "true");
+    // 🔒 Mark as submitted for THIS SESSION ONLY
+    sessionStorage.setItem("prakriti_submitted", "true");
 
     submitBtn.innerText = "Already Submitted";
     submitBtn.style.cursor = "not-allowed";
@@ -175,11 +174,3 @@ function submitForm() {
     alert("Submission failed. Please try again.");
   });
 }
-
-// -------------------------
-// DEV ONLY: reset submission
-// -------------------------
-window.resetSubmission = () => {
-  localStorage.removeItem("prakriti_submitted");
-  location.reload();
-};
