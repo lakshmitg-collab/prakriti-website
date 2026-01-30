@@ -1,20 +1,3 @@
-// -------------------------
-// PREVENT MULTIPLE SUBMISSION (OPTION 1)
-// -------------------------
-if (localStorage.getItem("prakriti_submitted")) {
-  document.body.innerHTML = `
-    <div style="
-      text-align:center;
-      margin-top:100px;
-      font-family:Segoe UI, sans-serif;
-    ">
-      <h2>✅ Already Submitted</h2>
-      <p>You have already submitted the form. Thank you for your participation.</p>
-    </div>
-  `;
-  throw new Error("Already submitted");
-}
-
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const photoPreview = document.getElementById("photoPreview");
@@ -23,11 +6,27 @@ const questionsDiv = document.getElementById("questions");
 const downloadLink = document.getElementById("downloadLink");
 const resultCard = document.getElementById("resultCard");
 const resultDiv = document.getElementById("result");
+const submitBtn = document.querySelector(".submit-btn");
+
 
 let stream = null;
 let capturedBlob = null;
 let answers = {};
 let useFrontCamera = true;
+
+// -------------------------
+// DISABLE SUBMIT IF ALREADY SUBMITTED
+// -------------------------
+if (localStorage.getItem("prakriti_submitted")) {
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Already Submitted";
+  submitBtn.style.opacity = "0.6";
+  submitBtn.style.cursor = "not-allowed";
+
+  resultCard.style.display = "block";
+  resultDiv.innerHTML = "✅ You have already submitted the data. Thank you!";
+}
+
 
 // ---------------- CAMERA ----------------
 function stopCamera() {
@@ -139,18 +138,23 @@ function submitForm() {
   .then(res => res.json())
   .then(data => {
 
-  // 🔒 LOCK FUTURE SUBMISSIONS
-  localStorage.setItem("prakriti_submitted", "true");
-
-  resultCard.style.display = "block";
-  resultDiv.innerHTML = "✅ Data submitted successfully";
-
-  if (data.pdf_id) {
-    downloadLink.href =
-      `https://prakriti-website.onrender.com/download/${data.pdf_id}`;
-    downloadLink.innerText = "Download PDF";
-  }
-})
-
+    // 🔒 MARK AS SUBMITTED
+    localStorage.setItem("prakriti_submitted", "true");
+  
+    // 🔒 DISABLE SUBMIT BUTTON
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Already Submitted";
+    submitBtn.style.opacity = "0.6";
+    submitBtn.style.cursor = "not-allowed";
+  
+    resultCard.style.display = "block";
+    resultDiv.innerHTML = "✅ Data submitted successfully";
+  
+    if (data.pdf_id) {
+      downloadLink.href =
+        `https://prakriti-website.onrender.com/download/${data.pdf_id}`;
+      downloadLink.innerText = "Download PDF";
+    }
+  })
   .catch(() => alert("Submission failed"));
 }
