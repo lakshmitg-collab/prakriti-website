@@ -1,13 +1,14 @@
+// -------------------------
+// DOM ELEMENTS
+// -------------------------
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const photoPreview = document.getElementById("photoPreview");
 const captureBtn = document.getElementById("captureBtn");
 const questionsDiv = document.getElementById("questions");
-const downloadLink = document.getElementById("downloadLink");
 const resultCard = document.getElementById("resultCard");
 const resultDiv = document.getElementById("result");
 const submitBtn = document.querySelector(".submit-btn");
-
 
 let stream = null;
 let capturedBlob = null;
@@ -27,8 +28,9 @@ if (localStorage.getItem("prakriti_submitted")) {
   resultDiv.innerHTML = "✅ You have already submitted the data. Thank you!";
 }
 
-
-// ---------------- CAMERA ----------------
+// -------------------------
+// CAMERA FUNCTIONS
+// -------------------------
 function stopCamera() {
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
@@ -40,13 +42,15 @@ function startCamera() {
   stopCamera();
   navigator.mediaDevices.getUserMedia({
     video: { facingMode: useFrontCamera ? "user" : "environment" }
-  }).then(s => {
+  })
+  .then(s => {
     stream = s;
     video.srcObject = s;
     video.classList.add("active");
     photoPreview.classList.remove("active");
     captureBtn.hidden = false;
-  }).catch(() => alert("Camera access failed"));
+  })
+  .catch(() => alert("Camera access failed"));
 }
 
 function switchCamera() {
@@ -71,7 +75,9 @@ function capture() {
   captureBtn.hidden = true;
 }
 
-// ---------------- QUESTIONS ----------------
+// -------------------------
+// QUESTIONS
+// -------------------------
 const sections = [
   {
     title: "Physical & Body Characteristics",
@@ -118,12 +124,26 @@ function toggleOption(el, qid, val) {
     : answers[qid].push(val);
 }
 
-// ---------------- SUBMIT ----------------
+// -------------------------
+// SUBMIT
+// -------------------------
 function submitForm() {
-  if (!capturedBlob) return alert("Capture photo first");
 
-  const name = document.getElementById("name").value;
-  const age = document.getElementById("age").value;
+  if (submitBtn.disabled) return;
+
+  if (!capturedBlob) return alert("Please capture a photo first");
+  if (Object.keys(answers).length === 0)
+    return alert("Please answer at least one question");
+
+  const name = document.getElementById("name").value.trim();
+  const age = document.getElementById("age").value.trim();
+
+  if (!name || !age) return alert("Please enter name and age");
+
+  // Disable immediately to avoid double-click
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Submitting...";
+  submitBtn.style.opacity = "0.6";
 
   const fd = new FormData();
   fd.append("image", capturedBlob, "photo.png");
@@ -135,30 +155,30 @@ function submitForm() {
     method: "POST",
     body: fd
   })
-  .then(res => res.json())
-  .then(data => {
-
-    // 🔒 MARK AS SUBMITTED
-    localStorage.setItem("prakriti_submitted", "true");
-  
-    // 🔒 DISABLE SUBMIT BUTTON
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Already Submitted";
-    submitBtn.style.opacity = "0.6";
-    submitBtn.style.cursor = "not-allowed";
-  
-    resultCard.style.display = "block";
-    resultDiv.innerHTML = "✅ Data submitted successfully";
-  
-    if (data.pdf_id) {
-      downloadLink.href =
-        `https://prakriti-website.onrender.com/download/${data.pdf_id}`;
-      downloadLink.innerText = "Download PDF";
-    }
+  .then(res => {
+    if (!res.ok) throw new Error("Server error");
+    return res.json();
   })
-  .catch(() => alert("Submission failed"));
+  .then(() => {
+    // 🔒 Mark as submitted
+    localStorage.setItem("prakriti_submitted", "true");
+
+    submitBtn.innerText = "Already Submitted";
+    submitBtn.style.cursor = "not-allowed";
+
+    resultCard.style.display = "block";
+    resultDiv.innerHTML = "✅ Data submitted successfully. Thank you!";
+  })
+  .catch(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerText = "Submit Data";
+    alert("Submission failed. Please try again.");
+  });
 }
 
+// -------------------------
+// DEV ONLY: reset submission
+// -------------------------
 window.resetSubmission = () => {
   localStorage.removeItem("prakriti_submitted");
   location.reload();
