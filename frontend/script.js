@@ -98,7 +98,38 @@ const sections = [
       ["Q9. How would you describe your metabolism and weight change?", ["Slow metabolism, difficult to gain weight", "Moderate metabolism", "Fast metabolism, weight changes easily"]],
       ["Q10. How are your bowel movements usually?", ["Constipation, dry stools", "Loose stools, frequent", "Regular and well-formed"]]
     ]
-  }
+  },
+  {
+    title: "Food Preferences",
+    qs: [
+      ["Q11. Which taste(s) do you naturally prefer? (Select more than one if applicable)", ["Sweet", "Sour", "Salty", "Bitter", "Pungent(Spicy)","Astringent(dry/rough taste)"]],
+      ["Q12. What best describes your dietary habit?", ["Vegan","Vegetarian", "Omnivorous(vegetarian + nonveg)"]]
+    ]
+  },
+  {
+    title: "Climate & Hydration",
+    qs: [
+      ["Q13. Which climate do you feel most comfortable in?", ["Cold climate", "Moderate climate", "Warm climate"]],
+      ["Q14. How much water do you usually consume daily?", ["Low intake", "Moderate intake", "High intake"]]
+    ]
+  },
+  {
+    title:"Sleep, Energy & Activity",
+    qs: [
+      ["Q15. How would you describe your sleep pattern?", ["Light, disturbed, short sleep", "Moderate, balanced sleep", "Deep, long, heavy sleep"]],
+      ["Q16. How would you describe your physical activity level?", ["Mostly sedentary", "Moderately active", "Highly active"]],
+      ["Q17. How would you describe your daily energy levels?", ["Variable energy, easily fatigued", "Intense energy, driven and focused", "Slow but steady energy"]]
+    ]
+  },
+  {
+    title:"Sleep, Energy & Activity",
+    qs: [
+      ["Q15. How would you describe your sleep pattern?", ["Light, disturbed, short sleep", "Moderate, balanced sleep", "Deep, long, heavy sleep"]],
+      ["Q16. How would you describe your physical activity level?", ["Mostly sedentary", "Moderately active", "Highly active"]],
+      ["Q17. How would you describe your daily energy levels?", ["Variable energy, easily fatigued", "Intense energy, driven and focused", "Slow but steady energy"]]
+    ]
+  },
+  
 ];
 
 let qid = 1;
